@@ -1,0 +1,26 @@
+{
+  "name": "mongo-scraper",
+  "version": "1.0.0",
+  "description": "Web-scraping saved into a mongo database",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ericpowell3d/Mongo-Scraper.git"
+  },
+  "author": "Eric Powell",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ericpowell3d/Mongo-Scraper/issues"
+  },
+  "homepage": "https://github.com/ericpowell3d/Mongo-Scraper#readme",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "cheerio": "^1.0.0-rc.3",
+    "express": "^4.17.1",
+    "express-handlebars": "^3.1.0",
+    "mongoose": "^5.7.1"
+  }
+}
