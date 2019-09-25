@@ -31,23 +31,30 @@ app.set("view engine", "handlebars");
 // Connect to Mongo DB
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/mongoMemes_db", { useNewUrlParser: true });
 
+// Route for main page
+app.get("/", function (req, res) {
+    res.render("index", {});
+});
+
 // Route for scraping top 25 memes
 app.get("/scrape", function (req, res) {
     axios.get("https://old.reddit.com/r/memes/").then(function (response) {
         var $ = cheerio.load(response.data); // Load response into cheerio
 
-        $("thing").each(function (i, element) { // Grab all articles and scrape variables
-            var result = {}; // Save empty result object
+        $(".thing").each(function (i, element) { // Grab all articles and scrape variables
+            if ($(this).attr("data-domain") === "i.redd.it") {
+                var result = {}; // Save empty result object
 
-            result.postLink = $(element).children("a.comments").attr("href"); // Get link of post
-            result.image = $(element).attr("data-url"); // Get image of post
-            result.header = $(element).children("p.title").text(); // Get header of post
-            result.authorLink = $(element).children("a.author").attr("href"); // Get link of author
-            result.author = $(element).children("a.author").text(); // Get author of post
+                result.postLink = "https://www.reddit.com" + $(this).children("a.thumbnail").attr("href"); // Get link of post
+                result.image = $(this).attr("data-url"); // Get image of post
+                result.header = $(this).children("div.entry").children("div.top-matter").children("p.title").text().slice(0, -12); // Get header of post
+                result.authorLink = $(this).children("div.entry").children("div.top-matter").children("p.tagline").children("a").attr("href").replace("old", "www"); // Get link of author
+                result.author = $(this).children("div.entry").children("div.top-matter").children("p.tagline").children("a").text(); // Get author of post
 
-            db.Meme.create(result) // Create a new meme object built from "result"
-                .then(function (data) { console.log("\n" + data + "\n"); })
-                .catch(function (err) { console.log("\n" + err + "\n"); });
+                db.Meme.create(result) // Create a new meme object built from "result"
+                    .then(function (data) { console.log("\n" + data + "\n"); })
+                    .catch(function (err) { console.log("\n" + err + "\n"); });
+            }
         });
 
         res.send("Scrape complete!");
