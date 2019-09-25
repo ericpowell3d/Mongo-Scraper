@@ -4,27 +4,82 @@
   
 body {
     font-family: 'Roboto', sans-serif;
-    font-size: 24px;
+    font-size: 21px;
     line-height: 1.5em;
     color: #fff;
     background: #323232;
 }
 
 nav {
-    background: #161616;
+    height: 80px;
+    background: #633;
 }
-.navBar {
-    width: 720px;
+h1 {
+    text-align: center;
+    padding: 18px;
+    color: #fff;
+}
+
+#genBtn {
     margin-left: auto;
     margin-right: auto;
-}
-.navBar div {
-    display: inline-block;
-    margin: 24px;
     cursor: pointer;
 }
-.navBar h1 {
+
+.memeCard {
+    width: 100%;
+    padding: 12px;
+    margin: 24px 0;
+    background: #484848;
+}
+.memeImg {
     display: inline-block;
-    margin: 24px;
+    width: 22.1%;
+    height: 100%;
+    padding: 12px;
+    background: #161616;
+}
+.memeImgLink {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.memeText {
+    display: inline-block;
+    width: 52.9%;
+    height: 100%;
+    padding: 24px;
+
+}
+.memeHeader {
+    font-size: 32px;
+    color: #f00;
+    transition: 0.2s;
+}
+.memeHeader:hover {
+    color: #fff;
+}
+.memeAuthor{
+    color: #aaa;
+    transition: 0.2s;
+}
+.memeAuthor:hover {
+    color: #fff;
+}
+
+.memeComment {
+    display: inline-block;
+    text-align: center;
+    width: 20%;
+    height: 100%;
+}
+.memeCommentBtn {
+    cursor: pointer;
+}
+
+#pageBtns {
+    float: right;
+}
+.backBtn, .prevBtn, .nextBtn {
     cursor: pointer;
 }

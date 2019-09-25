@@ -31,37 +31,60 @@ app.set("view engine", "handlebars");
 // Connect to Mongo DB
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/mongoMemes_db", { useNewUrlParser: true });
 
+////////// ROUTES //////////
+
 // Route for main page
 app.get("/", function (req, res) {
     res.render("index", {});
 });
 
-// Route for scraping top 25 memes
+// Route for scraping top 25 memes and pushing them to the database
 app.get("/scrape", function (req, res) {
     axios.get("https://old.reddit.com/r/memes/").then(function (response) {
-        var $ = cheerio.load(response.data); // Load response into cheerio
+        db.Meme.find({})
+            .then(function (data) {
+                let $ = cheerio.load(response.data); // Load response into cheerio
+                let mem = data
 
-        $(".thing").each(function (i, element) { // Grab all articles and scrape variables
-            if ($(this).attr("data-domain") === "i.redd.it") {
-                var result = {}; // Save empty result object
+                $(".thing").each(function (index, element) { // Grab all articles and scrape variables
+                    if ($(this).attr("data-domain") === "i.redd.it") {
+                        let result = {}; // Save empty result object
+                        let create = true;
 
-                result.postLink = "https://www.reddit.com" + $(this).children("a.thumbnail").attr("href"); // Get link of post
-                result.image = $(this).attr("data-url"); // Get image of post
-                result.header = $(this).children("div.entry").children("div.top-matter").children("p.title").text().slice(0, -12); // Get header of post
-                result.authorLink = $(this).children("div.entry").children("div.top-matter").children("p.tagline").children("a").attr("href").replace("old", "www"); // Get link of author
-                result.author = $(this).children("div.entry").children("div.top-matter").children("p.tagline").children("a").text(); // Get author of post
+                        result.header = $(this).children("div.entry").children("div.top-matter").children("p.title").text().slice(0, -12); // Get header of post
+                        result.author = $(this).children("div.entry").children("div.top-matter").children("p.tagline").children("a").text(); // Get author of post
+                        result.imageLink = $(this).attr("data-url"); // Get link of image
+                        result.postLink = "https://www.reddit.com" + $(this).children("a.thumbnail").attr("href"); // Get link of post
+                        result.authorLink = $(this).children("div.entry").children("div.top-matter").children("p.tagline").children("a").attr("href").replace("old", "www"); // Get link of author
 
-                db.Meme.create(result) // Create a new meme object built from "result"
-                    .then(function (data) { console.log("\n" + data + "\n"); })
-                    .catch(function (err) { console.log("\n" + err + "\n"); });
-            }
-        });
+                        for (let i = mem.length - 1; i >= 0; i--) {
+                            if (result.postLink === mem[i].postLink) {
+                                create = false;
+                                break;
+                            }
+                        }
 
-        res.send("Scrape complete!");
+                        if (create) {
+                            db.Meme.create(result) // Create a new meme object built from "result"
+                                .then(function (dataRes) {
+                                    console.log("\n" + dataRes + "\n");
+                                    if (index >= 25) { console.log("\nDONE!\n"); }
+                                })
+                                .catch(function (err) { console.log("\n" + err + "\n"); });
+                        }
+                        else {
+                            console.log("Already found: " + result.postLink);
+                            if (index >= 25) { console.log("\nDONE!\n"); }
+                        }
+                    }
+                });
+
+                res.send("Scrape done!");
+            })
+            .catch(function (err) { res.json(err); });
     });
 });
 
-// Route for getting all memes from the db
 app.get("/memes", function (req, res) {
     db.Meme.find({})
         .then(function (data) { res.json(data); })
@@ -79,10 +102,12 @@ app.get("/memes/:id", function (req, res) {
 // Route for saving/updating a meme's associated comment
 app.post("/memes/:id", function (req, res) {
     db.Comment.create(req.body) // Create a new comment and pass in req.body
-        .then(function (data) { return db.Article.findOneAndUpdate({ _id: req.params.id }, { note: data._id }, { new: true }); })
-        .then(function (dbArticle) { res.json(dbArticle); })
+        .then(function (data) { return db.Comment.findOneAndUpdate({ _id: req.params.id }, { note: data._id }, { new: true }); })
+        .then(function (data2) { res.json(data2); })
         .catch(function (err) { res.json(err); });
 });
+
+////////// SERVER //////////
 
 // Server listen
 app.listen(PORT, function () {
